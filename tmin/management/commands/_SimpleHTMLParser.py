@@ -23,7 +23,7 @@ OTHER DEALINGS IN THE SOFTWARE."""
 
 from __future__ import print_function
 
-from HTMLParser import HTMLParser
+from html5lib import HTMLParser
 
 def get_first_tag_info(html):
     """ Takes an html snippet and returns:
