@@ -23,15 +23,14 @@ OTHER DEALINGS IN THE SOFTWARE."""
 
 from __future__ import print_function
 
-from html5lib import HTMLParser
+from html5lib import HTMLParser, parseFragment
 
 def get_first_tag_info(html):
     """ Takes an html snippet and returns:
         (tag, attribute dictionary)
     """
-    parser = FirstTagInfo()
-    parser.feed(html)
-    return (parser.tag, parser.attrs)
+    tree = parseFragment(html)
+    return (tree.tag, tree.attrib)
 
 class FirstTagInfo(HTMLParser):
 
