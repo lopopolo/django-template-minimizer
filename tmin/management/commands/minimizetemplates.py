@@ -147,10 +147,16 @@ Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
 
         # Reading template location from settings
         try:
-            dirs = settings.TEMPLATE_DIRS
-        except AttributeError:
-            raise CommandError('You must specify TEMPLATE_DIRS in your '
-                               'settings file.')
+            from django.template.loaders.app_directories import \
+                get_app_template_dirs
+            dirs = list(settings.TEMPLATES[0]['DIRS']) + \
+                list(get_app_template_dirs('templates'))
+        except (ImportError, AttributeError):
+            try:
+                dirs = settings.TEMPLATE_DIRS
+            except AttributeError:
+                raise CommandError('You must specify TEMPLATE_DIRS in your '
+                                   'settings file.')
 
         # Get the full and proper paths
         cwd = getcwd()
