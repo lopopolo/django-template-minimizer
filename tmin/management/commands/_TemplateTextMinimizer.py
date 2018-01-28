@@ -21,6 +21,8 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE."""
 
+from __future__ import print_function
+
 import re
 from _SimpleHTMLParser import get_first_tag_info
 from _ManageMinimizers import get_minimizers
@@ -136,8 +138,8 @@ def minimize_template_text(text):
 def revert_text_keys(text, word_list):
     """ revert the text keys.  We may have to do this multiple times
     as some keys may be embeded in other word_list entries"""
-    
-    if not text or not word_list: 
+
+    if not text or not word_list:
         return text
 
     # If we loop through the word_list 10 times without
@@ -406,9 +408,9 @@ here \t\t\tcomes        the rain \n\n\nagain <a href='bla'>test</a>
 """
 
     a = minimize_template_text(text)
-    print text
-    print '#' * 10
-    print a
-    print '#' * 10
-    print 'Character length before: %s' % len(text)
-    print 'Character length after:  %s' % len(a)
+    print(text)
+    print('#' * 10)
+    print(a)
+    print('#' * 10)
+    print('Character length before: %s' % len(text))
+    print('Character length after:  %s' % len(a))

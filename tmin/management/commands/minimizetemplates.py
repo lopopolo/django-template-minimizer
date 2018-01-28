@@ -21,6 +21,8 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE."""
 
+from __future__ import print_function
+
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from os import getcwd, sep, walk, makedirs
@@ -66,9 +68,9 @@ The minimizer command uses its own minimizers for html, style tag embeded
     f = lambda x: x
     JAVASCRIPT_MINIMIZER = [f,]
 
-You can tell the minimizer command to disable an aggressive minimizer 
-    in the default HTML minimizer chain.  This minimizer normally removes 
-    (instead of just collapsing) the remaining space between '>' & '<' 
+You can tell the minimizer command to disable an aggressive minimizer
+    in the default HTML minimizer chain.  This minimizer normally removes
+    (instead of just collapsing) the remaining space between '>' & '<'
     character.  Set the following setting to False in your Django
     settings file to disable this final step:
     AGGRESSIVE_HTML_MINIMIZER = False
@@ -109,7 +111,7 @@ The minimizer collapses all white space not in a django tag,
     whitespace inside html attributes.
 Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
     these limiations.
-    
+
 '''
 
     option_list = BaseCommand.option_list + (
@@ -165,7 +167,7 @@ Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
             for root, walk_dirs, files in walk(d):
                 reverted_dirs = [x for x in walk_dirs if x.startswith(REVERTED)]
                 for reverted_dir in reverted_dirs:
-                    walk_dirs.remove(reverted_dir)  
+                    walk_dirs.remove(reverted_dir)
                 for name in files:
                     if not name.split('.')[-1] in ('.py', '.pyc'):
                         path= join(root,name)
@@ -187,10 +189,10 @@ Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
             move(source_path, archive_path)
             open(source_path, 'wb').write(minimized)
 
-        print 'Files:    %s' % num_files
-        print 'Before:   %s' % before
-        print 'After:    %s' % after
-        print "Decrease: {0:.0%}".format((before - after) / float(before))
+        print('Files:    %s' % num_files)
+        print('Before:   %s' % before)
+        print('After:    %s' % after)
+        print("Decrease: {0:.0%}".format((before - after) / float(before)))
 
     def revert(self, dirs):
         # Put together Archive dirs
@@ -219,7 +221,7 @@ Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
             for root, walk_dirs, files in walk(archive_dir):
                 reverted_dirs = [x for x in walk_dirs if x.startswith(REVERTED)]
                 for reverted_dir in reverted_dirs:
-                    walk_dirs.remove(reverted_dir)                
+                    walk_dirs.remove(reverted_dir)
                 for archive_name in files:
                     # Collect all the paths
                     archive_path = join(root, archive_name)

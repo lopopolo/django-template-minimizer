@@ -21,6 +21,8 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE."""
 
+from __future__ import print_function
+
 from HTMLParser import HTMLParser
 
 def get_first_tag_info(html):
@@ -49,5 +51,5 @@ class FirstTagInfo(HTMLParser):
 if __name__ == '__main__':
     text = ('<scRipt t="bla" t2 = bla t3= \'bla\' t4>cat dog'
                              '<Script>mouse</scriPt>bla</scripT>')
-    print text
-    print get_first_tag_info(text)
+    print(text)
+    print(get_first_tag_info(text))
