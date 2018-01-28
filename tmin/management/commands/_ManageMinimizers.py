@@ -22,8 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE."""
 
 import re
-from _JavascriptMinify import jsmin
-from _cssmin import cssmin
+from ._JavascriptMinify import jsmin
+from ._cssmin import cssmin
 from django.conf import settings
 
 FLAGS  = re.IGNORECASE + re.DOTALL
@@ -46,10 +46,10 @@ def get_minimizers():
     jsminimizers = [jsmin]
     cssminimizers = [cssmin]
     htmlminimizers = [HTMLMIN1, HTMLMIN2]
-    
+
     if hasattr(settings, 'AGGRESSIVE_HTML_MINIMIZER'):
-        aggressive = settings.AGGRESSIVE_HTML_MINIMIZER   
-        if not aggressive: htmlminimizers.pop()  
+        aggressive = settings.AGGRESSIVE_HTML_MINIMIZER
+        if not aggressive: htmlminimizers.pop()
 
     # Get any override settings
     if hasattr(settings, 'JAVASCRIPT_MINIMIZERS'):
