@@ -214,7 +214,7 @@ Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
             if not exists(d):
                 makedirs(d)
             move(source_path, archive_path)
-            open(source_path, 'wb').write(minimized)
+            open(source_path, 'w').write(minimized)
 
         print('Files:    %s' % num_files)
         print('Before:   %s' % before)

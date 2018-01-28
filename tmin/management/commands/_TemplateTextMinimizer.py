@@ -147,7 +147,7 @@ def revert_text_keys(text, word_list):
 
     max_iterations = len(word_list) * 10
 
-    for x in xrange(max_iterations):
+    for x in range(max_iterations):
 
         # When the wordlist empties, break the for loop
         if not word_list:
