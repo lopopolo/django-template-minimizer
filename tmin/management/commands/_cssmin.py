@@ -73,7 +73,7 @@ found at <http://github.com/yui/yuicompressor>, and is licensed as follows:
 """
 
 
-from StringIO import StringIO # The pure-Python StringIO supports unicode.
+from io import StringIO
 import re
 
 
