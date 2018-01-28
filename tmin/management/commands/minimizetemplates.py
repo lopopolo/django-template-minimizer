@@ -113,14 +113,35 @@ Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
     these limiations.
 
 '''
-
-    option_list = BaseCommand.option_list + (
+    _option_list = (
         make_option('-m', '--minimize',
                     action='store_true', dest='minimize', default=False,
                     help='Minimize templates.'),
         make_option('-u', '--undo',
                     action='store_true', dest='undo', default=False,
                     help='Reverts minimized templates from the archive.'),)
+
+    if hasattr(BaseCommand, 'option_list'):
+        option_list = BaseCommand.option_list + _option_list
+    else:
+        def add_arguments(self, parser):
+            option_typemap = {
+                "string": str,
+                "int": int,
+                "float": float
+            }
+            for opt in self._option_list:
+                option = {k: v
+                          for k, v in opt.__dict__.items()
+                          if v is not None}
+                flags = (option.get("_long_opts", []) +
+                         option.get("_short_opts", []))
+                del option["_long_opts"]
+                del option["_short_opts"]
+                if "type" in option:
+                    opttype = option["type"]
+                    option["type"] = option_typemap.get(opttype, opttype)
+                parser.add_argument(*flags, **option)
 
     def handle(self, *args, **options):
 
