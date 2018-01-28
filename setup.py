@@ -7,7 +7,7 @@ long_description = codecs.open('README.rst', 'r', 'utf-8').read()
 setup(name='django-template-minimizer',
       version='0.1.7',
       description=('Minimize your Django templates so that '
-                   'your HTML is served up already minimized.'), 
+                   'your HTML is served up already minimized.'),
       long_description=long_description,
       author='Charles Kaminski',
       author_email='CharlesKaminski@gmail.com',
@@ -30,13 +30,16 @@ setup(name='django-template-minimizer',
           'License :: OSI Approved :: MIT License',
           'Operating System :: OS Independent',
           'Programming Language :: Python',
-          'Programming Language :: Python :: 2.5',
-          'Programming Language :: Python :: 2.6',
-          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
           'Topic :: Internet :: WWW/HTTP',
           'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
           'Topic :: Internet :: WWW/HTTP :: WSGI',
           'Topic :: Software Development :: Libraries :: Python Modules',
           'Topic :: Utilities',
-      ] 
+      ],
+      install_requires=[
+          'html5lib',
+      ]
 )
