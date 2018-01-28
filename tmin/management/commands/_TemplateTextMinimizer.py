@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE."""
 from __future__ import print_function
 
 import re
-from _SimpleHTMLParser import get_first_tag_info
-from _ManageMinimizers import get_minimizers
+from ._SimpleHTMLParser import get_first_tag_info
+from ._ManageMinimizers import get_minimizers
 
 FLAGS  = re.IGNORECASE + re.DOTALL
 

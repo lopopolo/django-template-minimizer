@@ -29,7 +29,7 @@ from os import getcwd, sep, walk, makedirs
 from os.path import join, exists, basename, dirname
 from shutil import move, rmtree
 from optparse import make_option
-from _TemplateTextMinimizer import minimize_template_text
+from ._TemplateTextMinimizer import minimize_template_text
 
 ARCHIVE = '_minimizer_archive'
 REVERTED = '_reverted_'
