@@ -40,6 +40,7 @@ setup(name='django-template-minimizer',
           'Topic :: Utilities',
       ],
       install_requires=[
+          'django',
           'html5lib',
       ]
 )

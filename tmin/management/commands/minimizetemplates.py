@@ -21,14 +21,13 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE."""
 
-from __future__ import print_function
+from optparse import make_option
+from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
-from os import getcwd, sep, walk, makedirs
-from os.path import join, exists, basename, dirname
-from shutil import move, rmtree
-from optparse import make_option
+from django.template.loaders.app_directories import get_app_template_dirs
+
 from ._TemplateTextMinimizer import minimize_template_text
 
 ARCHIVE = '_minimizer_archive'
@@ -44,14 +43,14 @@ class Command(BaseCommand):
     help = '''Use this tool to minimize Django templates after
 development.  This way, your templates are small when they are
 evaluated and the HTML served is already minimized; eliminiating
-any post-processing minimization step.  The command can be undone
-using the -u option.
+any post-processing minimization step.
 
 Use the comment tags {# NOMINIFY #} {# ENDNOMINIFY #} to wrap
 content you do not want minified.
 
-Uses the setting TEMPLATE_DIRS in your Django settings file to
-    tell the command where to find templates to minimize.
+Uses the setting TEMPLATES in your Django settings file and
+    `get_app_template_dirs` to tell the command where to find
+    templates to minimize.
 
 Customization:
 The minimizer command uses its own minimizers for html, style tag embeded
@@ -116,158 +115,80 @@ Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
     _option_list = (
         make_option('-m', '--minimize',
                     action='store_true', dest='minimize', default=False,
-                    help='Minimize templates.'),
-        make_option('-u', '--undo',
-                    action='store_true', dest='undo', default=False,
-                    help='Reverts minimized templates from the archive.'),)
+                    help='Minimize templates.'),)
 
-    if hasattr(BaseCommand, 'option_list'):
-        option_list = BaseCommand.option_list + _option_list
-    else:
-        def add_arguments(self, parser):
-            option_typemap = {
-                "string": str,
-                "int": int,
-                "float": float
-            }
-            for opt in self._option_list:
-                option = {k: v
-                          for k, v in opt.__dict__.items()
-                          if v is not None}
-                flags = (option.get("_long_opts", []) +
-                         option.get("_short_opts", []))
-                del option["_long_opts"]
-                del option["_short_opts"]
-                if "type" in option:
-                    opttype = option["type"]
-                    option["type"] = option_typemap.get(opttype, opttype)
-                parser.add_argument(*flags, **option)
+    def add_arguments(self, parser):
+        option_typemap = {
+            'string': str,
+            'int': int,
+            'float': float
+        }
+        for opt in self._option_list:
+            option = {k: v
+                      for k, v in opt.__dict__.items()
+                      if v is not None}
+            flags = (option.get('_long_opts', []) +
+                     option.get('_short_opts', []))
+            del option['_long_opts']
+            del option['_short_opts']
+            if 'type' in option:
+                opttype = option['type']
+                option['type'] = option_typemap.get(opttype, opttype)
+            parser.add_argument(*flags, **option)
 
     def handle(self, *args, **options):
-
         # Reading template location from settings
-        try:
-            from django.template.loaders.app_directories import \
-                get_app_template_dirs
-            dirs = list(settings.TEMPLATES[0]['DIRS']) + \
-                list(get_app_template_dirs('templates'))
-        except (ImportError, AttributeError):
-            try:
-                dirs = settings.TEMPLATE_DIRS
-            except AttributeError:
-                raise CommandError('You must specify TEMPLATE_DIRS in your '
-                                   'settings file.')
+        dirs = list(settings.TEMPLATES[0]['DIRS']) + \
+            list(get_app_template_dirs('templates'))
 
-        # Get the full and proper paths
-        cwd = getcwd()
-        dirs = [x.replace('/', sep).rstrip(sep) for x in dirs]
-        dirs = [join(cwd,x) for x in dirs]
-
-        if options['undo']:
-            self.revert(dirs)
-            self.stdout.write('Successfully reverted minimized Templates:\n')
-            for d in dirs:
-                self.stdout.write('%s\n' % d)
-            return 0
-        elif options['minimize']:
+        if options['minimize']:
             self.minimize_templates(dirs)
-            self.stdout.write('Successfully minimized Templates:\n')
-            for d in dirs:
-                self.stdout.write('%s\n' % d)
+            self.stdout.write(self.style.SUCCESS('Successfully minimized '
+                                                 'Templates:\n'))
+            for template_dir in dirs:
+                self.stdout.write('%s\n' % template_dir)
             return 0
         else:
-            command_name = basename(__file__).rstrip('.py')
+            command_name = Path(__file__).name.rstrip('.py')
             self.print_help(command_name, '')
 
     def minimize_templates(self, dirs):
-
+        template_dir_paths = [Path(d) for d in dirs]
         # Check that the archive folders don't already exist
-        for d in dirs:
-            if exists(join(d, ARCHIVE)):
-                raise CommandError(ARCHIVE_EXISTS % d)
+        for template_dir in template_dir_paths:
+            archive_dir = template_dir / ARCHIVE
+            if archive_dir.exists():
+                raise CommandError(ARCHIVE_EXISTS % template_dir)
 
         paths = []
         # Walk the directories to build a list of files to minimize
         # Currently not following symbolic links
-        for d in dirs:
-            archive_dir = join(d, ARCHIVE)
-            for root, walk_dirs, files in walk(d):
-                reverted_dirs = [x for x in walk_dirs if x.startswith(REVERTED)]
-                for reverted_dir in reverted_dirs:
-                    walk_dirs.remove(reverted_dir)
-                for name in files:
-                    if not name.split('.')[-1] in ('.py', '.pyc'):
-                        path= join(root,name)
-                        paths.append([path, path.replace(d, archive_dir)])
+        for template_dir in template_dir_paths:
+            for template in template_dir.rglob('*.html'):
+                paths.append((template_dir, template))
 
         # Minimize the files
         num_files, before, after = 0, 0, 0
-        for source_path, archive_path in paths:
-            original = ''.join(open(source_path).readlines())
+        for template_root, template_path in paths:
+            archive_path = template_root / ARCHIVE
+            with template_path.open() as template:
+                original = ''.join(template.readlines())
             minimized = minimize_template_text(original)
 
             num_files = num_files + 1
             before = before + len(original)
             after = after + len(minimized)
 
-            d = dirname(archive_path)
-            if not exists(d):
-                makedirs(d)
-            move(source_path, archive_path)
-            open(source_path, 'w').write(minimized)
+            try:
+                archive_path.mkdir()
+            except FileExistsError:
+                pass
+            template_path.rename(archive_path / template_path.name)
+            with template_path.open('w') as template:
+                template.write_text(minimized)
 
-        print('Files:    %s' % num_files)
-        print('Before:   %s' % before)
-        print('After:    %s' % after)
-        print("Decrease: {0:.0%}".format((before - after) / float(before)))
-
-    def revert(self, dirs):
-        # Put together Archive dirs
-        # Check  the archive folders do exist
-        archive_dirs = []
-        for d in dirs:
-            archive_dir = join(d, ARCHIVE)
-            archive_dirs.append(archive_dir)
-            if not exists(archive_dir):
-                raise CommandError(ARCHIVE_DOESNT_EXIST % archive_dir)
-
-        # Put together reverted dirs
-        reverted_dirs = []
-        for d in dirs:
-            i = 1
-            while exists(join(d, REVERTED + str(i))):
-                i = i + 1
-            reverted_dirs.append(join(d, REVERTED + str(i)))
-
-        # zip everything up
-        all_dirs = zip(archive_dirs, dirs, reverted_dirs)
-
-        # Walk the directories and put together paths
-        paths = []
-        for archive_dir, d, reverted_dir in all_dirs:
-            for root, walk_dirs, files in walk(archive_dir):
-                reverted_dirs = [x for x in walk_dirs if x.startswith(REVERTED)]
-                for reverted_dir in reverted_dirs:
-                    walk_dirs.remove(reverted_dir)
-                for archive_name in files:
-                    # Collect all the paths
-                    archive_path = join(root, archive_name)
-                    path = archive_path.replace(archive_dir, d)
-                    reverted_path = archive_path.replace(archive_dir,
-                                                         reverted_dir)
-                    paths.append([archive_path, path, reverted_path])
-
-        # Make the moves
-        for archive_path, path, reverted_path in paths:
-            # Create the directories
-            d = dirname(path)
-            if not exists(d): makedirs(d)
-            d = dirname(reverted_path)
-            if not exists(d): makedirs(d)
-
-            move(path, reverted_path)
-            move(archive_path, path)
-
-        # Delete the archive folder
-        for d in archive_dirs:
-            rmtree(d)
+        self.stdout.write('Files:    %s' % num_files)
+        self.stdout.write('Before:   %s' % before)
+        self.stdout.write('After:    %s' % after)
+        self.stdout.write(
+            'Decrease: {0:.0%}'.format((before - after) / float(before)))
