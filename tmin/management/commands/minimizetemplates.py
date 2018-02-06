@@ -184,8 +184,7 @@ Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
             except FileExistsError:
                 pass
             template_path.rename(archive_path / template_path.name)
-            with template_path.open('w') as template:
-                template.write_text(minimized)
+            template_path.write_text(minimized)
 
         self.stdout.write('Files:    %s' % num_files)
         self.stdout.write('Before:   %s' % before)
