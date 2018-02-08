@@ -170,15 +170,14 @@ Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
         # Minimize the files
         num_files, before, after = 0, 0, 0
         for template_root, template_path in paths:
-            archive_path = template_root / ARCHIVE
-            with template_path.open() as template:
-                original = ''.join(template.readlines())
+            original = template_path.read_text()
             minimized = minimize_template_text(original)
 
             num_files = num_files + 1
             before = before + len(original)
             after = after + len(minimized)
 
+            archive_path = template_root / ARCHIVE
             try:
                 archive_path.mkdir()
             except FileExistsError:
@@ -190,4 +189,4 @@ Use the {# NOMINIFY #} {# ENDNOMINIFY #} comment tags to overcome
         self.stdout.write('Before:   %s' % before)
         self.stdout.write('After:    %s' % after)
         self.stdout.write(
-            'Decrease: {0:.0%}'.format((before - after) / float(before)))
+            'Decrease: {:.0%}'.format((before - after) / float(before)))
